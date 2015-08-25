@@ -95,7 +95,7 @@ export default () => {
             m('head', [
                 m('title', 'something'),
                 m('meta', {name:'viewport', content:"width=device-width, initial-scale=1.0"}),
-                m('link', {href: '/style.css', type:'text/css', rel:'stylesheet'})
+                m('link', {href: './style.css', type:'text/css', rel:'stylesheet'})
             ]),
             m('body', events, [
                 m('.slides', _slide)//_slides.map(valueOf))
