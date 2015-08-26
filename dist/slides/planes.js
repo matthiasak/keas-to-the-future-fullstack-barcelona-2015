@@ -86,16 +86,16 @@ const looper = fn => {
 
 // define particles
 
-const plane = (image=0, [px,py]) => {
-    return {...particle([px,py], [0,0], [0,0]), image, mass: 54500}
+const plane = (image=0) => {
+    let x = random(0,canvas.width),
+        y = random(0,canvas.height)
+    return {...particle([x,y], [0,0], [0,0]), image:image%6, mass: random(500,5000)}
 }
 
-let planes = Array(1).fill(true).map(_ => plane(0, vector(canvas.width/2, canvas.height/2)))
+let planes = Array(50).fill(true).map((v,i) =>
+    plane(i))
 
-// the mouse
-let mouse = [0,0]
-window.addEventListener('mousemove', ({clientX, clientY}) => mouse = [clientX, clientY])
-
+// the input
 let keys = { 38: 'up', 37: 'left', 39: 'right', 40: 'down' },
     pressed = {}
 
@@ -161,16 +161,16 @@ looper(seconds => {
 
         if(pressed.left) {
             let left_vec = rotate(normalize(velocity), -90)
-            p = applyForce(p, p.mass*.0005, scale(left_vec, seconds))
+            p = applyForce(p, 5000/p.mass, scale(left_vec, seconds))
         }
 
         if(pressed.right) {
             let right_vec = rotate(normalize(velocity), 90)
-            p = applyForce(p, p.mass*.0005, scale(right_vec, seconds))
+            p = applyForce(p, 5000/p.mass, scale(right_vec, seconds))
         }
 
         if(pressed.up) {
-            p = applyForce(p, p.mass*.0002, scale(normalize(velocity), seconds))
+            p = applyForce(p, 12500/p.mass, scale(normalize(velocity), seconds))
         }
 
         return p

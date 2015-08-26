@@ -41,7 +41,7 @@ const update = (p, time, friction) => {
     vx = (vx+ax) * (1-friction) // part a (x component)
     vy = (vy+ay) * (1-friction) // part a (y component)
     let position = [px + vx, py + vy], // part b
-        accel = [0,0],
+        accel = scale([ax,ay], friction),//[0,0],
         velocity = [vx,vy]
     return { ...p, position, accel, velocity }
 }
@@ -80,8 +80,6 @@ const orb = (mass, [px,py]) => {
 let orbs = []
 
 // the mouse
-let mouse = [0,0]
-window.addEventListener('mousemove', ({clientX, clientY}) => mouse = [clientX, clientY])
 window.addEventListener('mousedown', ({clientX, clientY}) => {
     orbs.push(orb(random(10,40), [clientX,clientY]))
 })
@@ -90,7 +88,7 @@ window.addEventListener('mousedown', ({clientX, clientY}) => {
  * PHYSICS UPDATES
  */
 
-const WORLD_FRICTION = 0.05
+const WORLD_FRICTION = 0.1
 const loop = (time) => {
     requestAnimationFrame(loop)
     let diff = ~~(time - (loop.time || 0))
@@ -111,10 +109,31 @@ gravity()
 
 const checkCollision = () => {
     requestAnimationFrame(checkCollision)
+    // with walls
     orbs = orbs.map(p => {
-        return (p.position[1] + .5*p.mass) >= canvas.height ?
-            { ...p, position: [p.position[0], canvas.height - .5*p.mass], accel:[0,0], velocity: [p.velocity[0], p.velocity[1]*-.75] } :
-            p
+        if(p.position[1] + .5*p.mass >= canvas.height){
+            p = { ...p, position: [p.position[0], canvas.height - .5*p.mass], accel:[0,0], velocity: [p.velocity[0], p.velocity[1]*-.75] }
+        }
+        if(p.position[0] - .5*p.mass <= 0){
+            p = { ...p, position: [.5*p.mass, p.position[1]], accel:[0,p.accel[1]], velocity: [p.velocity[0]*-.75, p.velocity[1]] }
+        }
+        if(p.position[0] + .5*p.mass >= canvas.width){
+            p = { ...p, position: [canvas.width - .5*p.mass, p.position[1]], accel:[0,p.accel[1]], velocity: [p.velocity[0]*-.75, p.velocity[1]] }
+        }
+        return p
+    })
+    // with each other
+    orbs = orbs.map(p => {
+        //any collisions?
+        orbs.forEach(p2 => {
+            if(p2===p) return // ignore comparing to self
+            if(mag(sub(p2.position, p.position)) < (p2.mass+p.mass)/2){
+                let diff = normalize(sub(p.position, p2.position))
+                p.velocity = scale(diff, 1)
+            }
+        })
+
+        return p
     })
 }
 checkCollision()
@@ -139,13 +158,6 @@ const paint = (t) => {
         c.arc(x, y, mass/2, 0, 2*Math.PI)
         c.fill()
     })
-
-    // draw mouse
-    c.fillStyle = '#fff'
-    let mouse_size = 10,
-        half = mouse_size/2,
-        [x,y] = mouse
-    c.fillRect(x-half,y-half,mouse_size,mouse_size)
 }
 
 paint()
