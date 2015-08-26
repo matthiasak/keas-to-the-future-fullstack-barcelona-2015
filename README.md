@@ -6,6 +6,14 @@ Talk given at Full Stack Fest in Barcelona, Sept 2015.
 
 Slide engine built with Mithril.js; makes heavy use of [Arbiter](http://matthiasak.github.io/Arbiter/) and [Arbiter-frame](http://matthiasak.github.io/arbiter-frame/dist/), which run on React and Mithril.
 
+Talk synopsis:
+
+> Much of the attention these days in the client and serverside JS stack surrounds the use of various frameworks, tools, testing, performance, and the connected, streaming, reactive world of the web.
+>
+> This talk is not about those topics above. Instead, this talk strips away all but the bare components and the raw curiosity one has for canvas drawings, simulations, animation techniques, DIY counter-culture.
+>
+> Technical aspects of this talk will include: an introduction to some boilerplate code, game programming patterns and the game loop; an intro natural physics simulations in a 2d environment; and a heavy dose of vectors.
+
 ---
 
 Extra notes (to self):
