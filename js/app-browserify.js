@@ -7,25 +7,6 @@ import engine from './mithril-slide-engine'
 
 window.addEventListener('load', app)
 
-const arbiter = (_src) => {
-    let src = m.prop('')
-
-    if(_src.indexOf('.js') !== -1){
-        m.startComputation()
-        fetch(_src)
-            .then(r => r.text())
-            .then(scriptText =>
-                src(`./Arbiter/#${escape(scriptText)}`))
-            .then(_ => m.endComputation())
-            .catch(e => console.log(e))
-    }
-
-    return {
-        controller: () => {},
-        view: () => m('iframe', {src: src()})
-    }
-}
-
 const frame = (_src) => {
     let src = m.prop('')
 
@@ -152,15 +133,17 @@ let movement = () => m('div',
 function app() {
     let e = engine()
     e.insert(home)
-    e.insert(arbiter('./slides/particle.js'))
-    e.insert(arbiter('./slides/particleLoop.js'))
-    e.insert(arbiter('./slides/particleLoopAccel.js'))
+    e.insert(frame('./slides/particle.js'))
+    e.insert(frame('./slides/particleLoop.js'))
+    e.insert(frame('./slides/looper.js'))
+    e.insert(frame('./slides/particleLoopAccel.js'))
+    e.insert(frame('./slides/apply-force.js'))
     e.insert(recap(pause1))
     e.insert(recap(orderOfOps))
     e.insert(movement())
     e.insert(warning())
-    e.insert(arbiter('./slides/vectors.js'))
-    e.insert(arbiter('./slides/chaseTheMouse.js'))
+    e.insert(frame('./slides/vectors.js'))
+    e.insert(frame('./slides/chaseTheMouse.js'))
     e.insert(frame('./slides/canvas1.js'))
     e.insert(frame('./slides/canvas-mouse.js'))
     e.insert(frame('./slides/canvas-pointers.js'))
@@ -168,6 +151,10 @@ function app() {
     e.insert(frame('./slides/relate-to-time.js'))
     e.insert(frame('./slides/planes.js'))
     e.insert(frame('./slides/chain.js'))
+    e.insert(frame('./slides/springs.js'))
+    e.insert(frame('./slides/fire.js'))
+    e.insert(frame('./slides/webgl-shift.js'))
+    e.insert(frame('./slides/webgl.js'))
     e.insert(refs())
 
     e.render('html')

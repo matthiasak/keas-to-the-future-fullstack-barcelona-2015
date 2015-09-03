@@ -16,30 +16,6 @@ var fetch = require('./fetcher');
 
 window.addEventListener('load', app);
 
-var arbiter = function arbiter(_src) {
-    var src = _mithrilResolver.m.prop('');
-
-    if (_src.indexOf('.js') !== -1) {
-        _mithrilResolver.m.startComputation();
-        fetch(_src).then(function (r) {
-            return r.text();
-        }).then(function (scriptText) {
-            return src('./Arbiter/#' + escape(scriptText));
-        }).then(function (_) {
-            return _mithrilResolver.m.endComputation();
-        })['catch'](function (e) {
-            return console.log(e);
-        });
-    }
-
-    return {
-        controller: function controller() {},
-        view: function view() {
-            return (0, _mithrilResolver.m)('iframe', { src: src() });
-        }
-    };
-};
-
 var frame = function frame(_src) {
     var src = _mithrilResolver.m.prop('');
 
@@ -108,15 +84,17 @@ var movement = function movement() {
 function app() {
     var e = (0, _mithrilSlideEngine2['default'])();
     e.insert(home);
-    e.insert(arbiter('./slides/particle.js'));
-    e.insert(arbiter('./slides/particleLoop.js'));
-    e.insert(arbiter('./slides/particleLoopAccel.js'));
+    e.insert(frame('./slides/particle.js'));
+    e.insert(frame('./slides/particleLoop.js'));
+    e.insert(frame('./slides/looper.js'));
+    e.insert(frame('./slides/particleLoopAccel.js'));
+    e.insert(frame('./slides/apply-force.js'));
     e.insert(recap(pause1));
     e.insert(recap(orderOfOps));
     e.insert(movement());
     e.insert(warning());
-    e.insert(arbiter('./slides/vectors.js'));
-    e.insert(arbiter('./slides/chaseTheMouse.js'));
+    e.insert(frame('./slides/vectors.js'));
+    e.insert(frame('./slides/chaseTheMouse.js'));
     e.insert(frame('./slides/canvas1.js'));
     e.insert(frame('./slides/canvas-mouse.js'));
     e.insert(frame('./slides/canvas-pointers.js'));
@@ -124,6 +102,10 @@ function app() {
     e.insert(frame('./slides/relate-to-time.js'));
     e.insert(frame('./slides/planes.js'));
     e.insert(frame('./slides/chain.js'));
+    e.insert(frame('./slides/springs.js'));
+    e.insert(frame('./slides/fire.js'));
+    e.insert(frame('./slides/webgl-shift.js'));
+    e.insert(frame('./slides/webgl.js'));
     e.insert(refs());
 
     e.render('html');
@@ -2812,8 +2794,10 @@ module.exports.get = function getOwnPropertyNames(it){
   return getNames(toIObject(it));
 };
 },{"./$":47,"./$.to-iobject":77}],31:[function(require,module,exports){
-var global = typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
-module.exports = global;
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+var UNDEFINED = 'undefined';
+var global = module.exports = typeof window != UNDEFINED && window.Math == Math
+  ? window : typeof self != UNDEFINED && self.Math == Math ? self : Function('return this')();
 if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
 },{}],32:[function(require,module,exports){
 var hasOwnProperty = {}.hasOwnProperty;
@@ -3014,17 +2998,27 @@ var global    = require('./$.global')
   , macrotask = require('./$.task').set
   , Observer  = global.MutationObserver || global.WebKitMutationObserver
   , process   = global.process
+  , isNode    = require('./$.cof')(process) == 'process'
   , head, last, notify;
 
-function flush(){
+var flush = function(){
+  var parent, domain;
+  if(isNode && (parent = process.domain)){
+    process.domain = null;
+    parent.exit();
+  }
   while(head){
+    domain = head.domain;
+    if(domain)domain.enter();
     head.fn.call(); // <- currently we use it only for Promise - try / catch not required
+    if(domain)domain.exit();
     head = head.next;
   } last = undefined;
+  if(parent)parent.enter();
 }
 
 // Node.js
-if(require('./$.cof')(process) == 'process'){
+if(isNode){
   notify = function(){
     process.nextTick(flush);
   };
@@ -3050,7 +3044,7 @@ if(require('./$.cof')(process) == 'process'){
 }
 
 module.exports = function asap(fn){
-  var task = {fn: fn, next: undefined};
+  var task = {fn: fn, next: undefined, domain: isNode && process.domain};
   if(last)last.next = task;
   if(!head){
     head = task;
@@ -3091,13 +3085,14 @@ module.exports = function(isEntries){
 },{"./$":47,"./$.to-iobject":77}],55:[function(require,module,exports){
 // all object keys, includes non-enumerable and symbols
 var $        = require('./$')
-  , anObject = require('./$.an-object');
-module.exports = function ownKeys(it){
+  , anObject = require('./$.an-object')
+  , Reflect  = require('./$.global').Reflect;
+module.exports = Reflect && Reflect.ownKeys || function ownKeys(it){
   var keys       = $.getNames(anObject(it))
     , getSymbols = $.getSymbols;
   return getSymbols ? keys.concat(getSymbols(it)) : keys;
 };
-},{"./$":47,"./$.an-object":9}],56:[function(require,module,exports){
+},{"./$":47,"./$.an-object":9,"./$.global":31}],56:[function(require,module,exports){
 'use strict';
 var path      = require('./$.path')
   , invoke    = require('./$.invoke')
@@ -4662,7 +4657,12 @@ var $         = require('./$')
   , isObject  = require('./$.is-object')
   , bind      = Function.bind || require('./$.core').Function.prototype.bind;
 
-$def($def.S, 'Reflect', {
+// MS Edge supports only 2 arguments
+// FF Nightly sets third argument as `new.target`, but does not create `this` from it
+$def($def.S + $def.F * require('./$.fails')(function(){
+  function F(){}
+  return !(Reflect.construct(function(){}, [], F) instanceof F);
+}), 'Reflect', {
   construct: function construct(Target, args /*, newTarget*/){
     aFunction(Target);
     if(arguments.length < 3){
@@ -4686,7 +4686,7 @@ $def($def.S, 'Reflect', {
     return isObject(result) ? result : instance;
   }
 });
-},{"./$":47,"./$.a-function":8,"./$.an-object":9,"./$.core":19,"./$.def":21,"./$.is-object":39}],140:[function(require,module,exports){
+},{"./$":47,"./$.a-function":8,"./$.an-object":9,"./$.core":19,"./$.def":21,"./$.fails":26,"./$.is-object":39}],140:[function(require,module,exports){
 // 26.1.3 Reflect.defineProperty(target, propertyKey, attributes)
 var $        = require('./$')
   , $def     = require('./$.def')
@@ -5140,7 +5140,7 @@ var $              = require('./$')
   , createDesc     = require('./$.property-desc')
   , getDesc        = $.getDesc
   , setDesc        = $.setDesc
-  , $create        = $.create
+  , _create        = $.create
   , getNames       = $names.get
   , $Symbol        = global.Symbol
   , setter         = false
@@ -5153,7 +5153,7 @@ var $              = require('./$')
 
 var setSymbolDesc = SUPPORT_DESC ? function(){ // fallback for old Android
   try {
-    return $create(setDesc({}, HIDDEN, {
+    return _create(setDesc({}, HIDDEN, {
       get: function(){
         return setDesc(this, HIDDEN, {value: false})[HIDDEN];
       }
@@ -5169,7 +5169,7 @@ var setSymbolDesc = SUPPORT_DESC ? function(){ // fallback for old Android
 }() : setDesc;
 
 var wrap = function(tag){
-  var sym = AllSymbols[tag] = $create($Symbol.prototype);
+  var sym = AllSymbols[tag] = _create($Symbol.prototype);
   sym._k = tag;
   SUPPORT_DESC && setter && setSymbolDesc(ObjectProto, tag, {
     configurable: true,
@@ -5181,55 +5181,55 @@ var wrap = function(tag){
   return sym;
 };
 
-function defineProperty(it, key, D){
+var $defineProperty = function defineProperty(it, key, D){
   if(D && has(AllSymbols, key)){
     if(!D.enumerable){
       if(!has(it, HIDDEN))setDesc(it, HIDDEN, createDesc(1, {}));
       it[HIDDEN][key] = true;
     } else {
       if(has(it, HIDDEN) && it[HIDDEN][key])it[HIDDEN][key] = false;
-      D = $create(D, {enumerable: createDesc(0, false)});
+      D = _create(D, {enumerable: createDesc(0, false)});
     } return setSymbolDesc(it, key, D);
   } return setDesc(it, key, D);
-}
-function defineProperties(it, P){
+};
+var $defineProperties = function defineProperties(it, P){
   anObject(it);
   var keys = enumKeys(P = toIObject(P))
     , i    = 0
     , l = keys.length
     , key;
-  while(l > i)defineProperty(it, key = keys[i++], P[key]);
+  while(l > i)$defineProperty(it, key = keys[i++], P[key]);
   return it;
-}
-function create(it, P){
-  return P === undefined ? $create(it) : defineProperties($create(it), P);
-}
-function propertyIsEnumerable(key){
+};
+var $create = function create(it, P){
+  return P === undefined ? _create(it) : $defineProperties(_create(it), P);
+};
+var $propertyIsEnumerable = function propertyIsEnumerable(key){
   var E = isEnum.call(this, key);
   return E || !has(this, key) || !has(AllSymbols, key) || has(this, HIDDEN) && this[HIDDEN][key]
     ? E : true;
-}
-function getOwnPropertyDescriptor(it, key){
+};
+var $getOwnPropertyDescriptor = function getOwnPropertyDescriptor(it, key){
   var D = getDesc(it = toIObject(it), key);
   if(D && has(AllSymbols, key) && !(has(it, HIDDEN) && it[HIDDEN][key]))D.enumerable = true;
   return D;
-}
-function getOwnPropertyNames(it){
+};
+var $getOwnPropertyNames = function getOwnPropertyNames(it){
   var names  = getNames(toIObject(it))
     , result = []
     , i      = 0
     , key;
   while(names.length > i)if(!has(AllSymbols, key = names[i++]) && key != HIDDEN)result.push(key);
   return result;
-}
-function getOwnPropertySymbols(it){
+};
+var $getOwnPropertySymbols = function getOwnPropertySymbols(it){
   var names  = getNames(toIObject(it))
     , result = []
     , i      = 0
     , key;
   while(names.length > i)if(has(AllSymbols, key = names[i++]))result.push(AllSymbols[key]);
   return result;
-}
+};
 
 // 19.4.1.1 Symbol([description])
 if(!useNative){
@@ -5237,22 +5237,27 @@ if(!useNative){
     if(this instanceof $Symbol)throw TypeError('Symbol is not a constructor');
     return wrap(uid(arguments[0]));
   };
-  $redef($Symbol.prototype, 'toString', function(){
+  $redef($Symbol.prototype, 'toString', function toString(){
     return this._k;
   });
 
-  $.create     = create;
-  $.isEnum     = propertyIsEnumerable;
-  $.getDesc    = getOwnPropertyDescriptor;
-  $.setDesc    = defineProperty;
-  $.setDescs   = defineProperties;
-  $.getNames   = $names.get = getOwnPropertyNames;
-  $.getSymbols = getOwnPropertySymbols;
+  $.create     = $create;
+  $.isEnum     = $propertyIsEnumerable;
+  $.getDesc    = $getOwnPropertyDescriptor;
+  $.setDesc    = $defineProperty;
+  $.setDescs   = $defineProperties;
+  $.getNames   = $names.get = $getOwnPropertyNames;
+  $.getSymbols = $getOwnPropertySymbols;
 
   if(SUPPORT_DESC && !require('./$.library')){
-    $redef(ObjectProto, 'propertyIsEnumerable', propertyIsEnumerable, true);
+    $redef(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
   }
 }
+
+// MS Edge converts symbols to JSON as '{}'
+if(!useNative || require('./$.fails')(function(){
+  return JSON.stringify([$Symbol()]) != '[null]';
+}))$redef($Symbol.prototype, 'toJSON', function toJSON(){ /* return undefined */ });
 
 var symbolStatics = {
   // 19.4.2.1 Symbol.for(key)
@@ -5296,17 +5301,17 @@ $def($def.S, 'Symbol', symbolStatics);
 
 $def($def.S + $def.F * !useNative, 'Object', {
   // 19.1.2.2 Object.create(O [, Properties])
-  create: create,
+  create: $create,
   // 19.1.2.4 Object.defineProperty(O, P, Attributes)
-  defineProperty: defineProperty,
+  defineProperty: $defineProperty,
   // 19.1.2.3 Object.defineProperties(O, Properties)
-  defineProperties: defineProperties,
+  defineProperties: $defineProperties,
   // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
-  getOwnPropertyDescriptor: getOwnPropertyDescriptor,
+  getOwnPropertyDescriptor: $getOwnPropertyDescriptor,
   // 19.1.2.7 Object.getOwnPropertyNames(O)
-  getOwnPropertyNames: getOwnPropertyNames,
+  getOwnPropertyNames: $getOwnPropertyNames,
   // 19.1.2.8 Object.getOwnPropertySymbols(O)
-  getOwnPropertySymbols: getOwnPropertySymbols
+  getOwnPropertySymbols: $getOwnPropertySymbols
 });
 
 // 19.4.3.5 Symbol.prototype[@@toStringTag]
@@ -5315,7 +5320,7 @@ setTag($Symbol, 'Symbol');
 setTag(Math, 'Math', true);
 // 24.3.3 JSON[@@toStringTag]
 setTag(global.JSON, 'JSON', true);
-},{"./$":47,"./$.an-object":9,"./$.def":21,"./$.enum-keys":24,"./$.get-names":30,"./$.global":31,"./$.has":32,"./$.keyof":48,"./$.library":49,"./$.property-desc":58,"./$.redef":59,"./$.shared":63,"./$.support-desc":72,"./$.tag":73,"./$.to-iobject":77,"./$.uid":80,"./$.wks":82}],169:[function(require,module,exports){
+},{"./$":47,"./$.an-object":9,"./$.def":21,"./$.enum-keys":24,"./$.fails":26,"./$.get-names":30,"./$.global":31,"./$.has":32,"./$.keyof":48,"./$.library":49,"./$.property-desc":58,"./$.redef":59,"./$.shared":63,"./$.support-desc":72,"./$.tag":73,"./$.to-iobject":77,"./$.uid":80,"./$.wks":82}],169:[function(require,module,exports){
 'use strict';
 var $            = require('./$')
   , weak         = require('./$.collection-weak')

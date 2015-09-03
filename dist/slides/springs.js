@@ -99,40 +99,67 @@ const setSize = () => {
 setSize()
 window.onresize = setSize
 
-/**
- * DATA
- */
+// define particles
 
-const box = (mass=random(1,50)) => {
-    return {...particle(), mass }
+const ball = (mass=50) => {
+    return {
+        ...particle([random(0,canvas.width),random(0,canvas.height)], [0,0], [0,0]),
+        mass
+    }
 }
 
-let particles = Array(20)
-    .fill(true)
-    .map(_ => box())
+let balls = Array(1).fill(true).map(_ => ball())
+let points = Array(3).fill(true).map(_ => ball(10))
+
+// the mouse
+let mouse = [0,0],
+    down  = false
+
+window.addEventListener('mousemove', ({clientX, clientY}) => {
+    mouse = [clientX, clientY]
+    if(down!==false) points[down].position = mouse
+})
+
+const contains = (bounds, point) =>
+    point[0] >= bounds[0][0]
+    && point[1] >= bounds[0][1]
+    && point[0] <= bounds[1][0]
+    && point[1] <= bounds[1][1]
+
+window.addEventListener('mousedown', () => {
+    points.forEach((p, i) => {
+        let {position, mass} = p,
+            [x,y] = position,
+            r = mass/2
+        if(contains([[x-r, y-r], [x+r, y+r]], mouse)){
+            down = i
+        }
+    })
+})
+
+window.addEventListener('mouseup', () => down = false)
 
 /**
  * PHYSICS UPDATES
  */
 
-const WORLD_FRICTION = .1
-looper(() => {
-    particles = particles.map(p => update(p, WORLD_FRICTION))
+const WORLD_FRICTION = 0.1
+looper(time => {
+    balls = balls.map(p => update(p, WORLD_FRICTION))
+    points = points.map(p => update(p, WORLD_FRICTION))
 })()
 
-// the mouse
-let mouse = [0,0]
-window.addEventListener('mousemove', ({clientX, clientY}) => mouse = [clientX, clientY])
-
-// chase the mouse by continually applying/adjusting force to each particle
-looper(() => {
-    particles = particles.map(p => {
-        // find directional difference b/w mouse and this particle
-        let dir = sub(mouse, p.position)
-        // normalize it (make the unit length 1)
-        dir = normalize(dir)
-        // apply movement to the particle in the direction of the mouse
-        return applyForce(p, 35/p.mass, dir) //<-- use the mass
+looper(time => {
+    points = points.map(p => {
+        balls = balls.map(b => {
+            // apply force in direction of each point
+            return applyForce(
+                b,
+                time,
+                scale(normalize(sub(p.position, b.position)), mag(sub(p.position, b.position)))
+            )
+        })
+        return p
     })
 })()
 
@@ -140,24 +167,38 @@ looper(() => {
  * DRAW UPDATES
  */
 
-looper((t) => {
-    // draw pink box
-    c.globalAlpha = .2
-    c.fillStyle = '#f449f0'
-    c.fillRect(0,0,canvas.width,canvas.height)
-    c.globalAlpha = 1
-
-    // draw particles
-    c.fillStyle = '#ccc'
-    particles.forEach(({position,mass}) => {
+// draw every 16ms
+looper(t => {
+    c.clearRect(0,0,canvas.width,canvas.height)
+    // draw anchors
+    c.fillStyle = '#888'
+    points.forEach(({position, mass}, i, arr) => {
         let [x,y] = position
-        c.fillRect(x-mass/2,y-mass/2,mass,mass)
+
+        c.strokeStyle = '#fff'
+        c.strokeWidth = 2
+        balls.forEach(({position, mass}, i, arr) => {
+            c.beginPath()
+            c.moveTo(x,y)
+            // log(x, y, position)
+            c.lineTo(...position)
+            c.stroke()
+            c.closePath()
+        })
+
+        c.beginPath()
+        c.arc(x, y, mass/2, 0, 2*Math.PI)
+        c.fill()
+        c.closePath()
     })
 
-    // draw mouse
-    c.fillStyle = '#fff'
-    let mouse_size = 30,
-        half = mouse_size/2,
-        [x,y] = mouse
-    c.fillRect(x-half,y-half,mouse_size,mouse_size)
+    // draw ball
+    c.fillStyle = 'red'
+    balls.forEach(({position, mass}, i, arr) => {
+        let [x,y] = position
+        c.beginPath()
+        c.arc(x, y, mass/2, 0, 2*Math.PI)
+        c.fill()
+        c.closePath()
+    })
 })()

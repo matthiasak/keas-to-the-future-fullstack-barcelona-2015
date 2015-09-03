@@ -18,16 +18,15 @@ const particle = (
 }
 
 const logEm = (a) =>
-    a.map( ({position}) => {
-          log(`x: ${position[0]}`)
-          log(`y: ${position[1]}`)
-          log(`-----------`)
-    })
+    a.map( ({position}) => `
+x: ${position[0]}
+y: ${position[1]}
+-----------`).join('')
 
 const random = (min=0, max=400) =>
     Math.random()*(max-min)+min
 
-let particles = Array(1)
+let particles = Array(2)
     .fill(true)
     .map(_ => particle())
 
@@ -54,8 +53,7 @@ const update = (p, friction) => {
     return { ...p, position, accel, velocity }
 }
 
-// loops
-
+// painting loop
 const WORLD_FRICTION = .95
 
 looper(t => {
@@ -64,5 +62,31 @@ looper(t => {
 
 setInterval(t => {
     reset()
-    logEm(particles)
+    log(new Date)
+    log(logEm(particles))
 })
+
+// applying a force to each particle
+
+const scale = ([x,y],n) =>
+    [n * x, n * y]
+
+const add = (...vx) =>
+    vx.reduce((a, v) =>
+        [a[0] + v[0], a[1] + v[1]],
+        [0,0])
+
+const applyForce = (v, m, a) => {
+    let {accel} = v
+    accel = scale(add(accel,a), m)
+    return { ...v, accel }
+}
+
+setInterval(() => {
+    particles = particles.map(p =>
+        applyForce(
+            p,
+            1,
+            [random(-50,50),random(-50,50)]
+        ))
+}, 1000)

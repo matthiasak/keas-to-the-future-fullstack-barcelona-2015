@@ -1,4 +1,3 @@
-// 1
 const particle = (
     position=[random(), random()],
     velocity=[0,0],
@@ -14,8 +13,11 @@ const logEm = (a) =>
           log(`-----------`)
     })
 
-const random = (min=0, max=400) => Math.random()*(max-min)+min
+const random = (min=0, max=400) =>
+    Math.random()*(max-min)+min
 
-let particles = Array(1).fill(true).map(_ => particle())
+let particles = Array(1)
+    .fill(true)
+    .map(_ => particle())
 
 logEm(particles)

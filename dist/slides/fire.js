@@ -99,40 +99,52 @@ const setSize = () => {
 setSize()
 window.onresize = setSize
 
-/**
- * DATA
- */
+// define particles
 
-const box = (mass=random(1,50)) => {
-    return {...particle(), mass }
+const flame = (size=random(40,80)) => {
+    return {
+        ...particle(mouse, [0,0], [0,0]),
+        size
+    }
 }
 
-let particles = Array(20)
-    .fill(true)
-    .map(_ => box())
+let flames = []
+
+// the mouse
+
+let mouse = [canvas.width/2,canvas.height]
+
+window.addEventListener('mousemove',
+    ({clientX, clientY}) => mouse = [clientX, clientY])
 
 /**
  * PHYSICS UPDATES
  */
 
-const WORLD_FRICTION = .1
-looper(() => {
-    particles = particles.map(p => update(p, WORLD_FRICTION))
+const WORLD_FRICTION = 0.1
+looper(time => {
+    flames = flames.map(p => update(p, WORLD_FRICTION))
 })()
 
-// the mouse
-let mouse = [0,0]
-window.addEventListener('mousemove', ({clientX, clientY}) => mouse = [clientX, clientY])
+looper(time => {
+    flames = flames.map(p => applyForce(p, time*p.size, [random(-2,2),-1]))
+})()
 
-// chase the mouse by continually applying/adjusting force to each particle
-looper(() => {
-    particles = particles.map(p => {
-        // find directional difference b/w mouse and this particle
-        let dir = sub(mouse, p.position)
-        // normalize it (make the unit length 1)
-        dir = normalize(dir)
-        // apply movement to the particle in the direction of the mouse
-        return applyForce(p, 35/p.mass, dir) //<-- use the mass
+looper(time => {
+    flames = flames.filter(({position, size}) =>
+        (position[1] > -1*size) &&
+        (size>1))
+})()
+
+setInterval(time => {
+    flames.push(flame())
+})
+
+looper(time => {
+    flames = flames.map(p => {
+        let {size} = p
+        size*=.99
+        return {...p, size}
     })
 })()
 
@@ -140,24 +152,32 @@ looper(() => {
  * DRAW UPDATES
  */
 
-looper((t) => {
-    // draw pink box
-    c.globalAlpha = .2
-    c.fillStyle = '#f449f0'
-    c.fillRect(0,0,canvas.width,canvas.height)
-    c.globalAlpha = 1
+const color = (size) => {
+    const sMin = 10,
+          sMax = 80,
+          min = 0x0000ff,
+          max = 0xee0000
 
-    // draw particles
-    c.fillStyle = '#ccc'
-    particles.forEach(({position,mass}) => {
+    let diff = sMax - Math.max(size - sMin, sMin)
+    return ~~(diff/(sMax - sMin)*(max-min))
+}
+
+const removeGreen = (num) => {
+    let rgb = num.toString(16)
+    return `${rgb.slice(0,2)}00${rgb.slice(4)}`
+}
+
+
+// draw every 16ms
+looper(t => {
+    c.clearRect(0,0,canvas.width,canvas.height)
+    // draw anchors
+    flames.forEach(({position, size}) => {
+        c.fillStyle = '#'+removeGreen(color(size))
         let [x,y] = position
-        c.fillRect(x-mass/2,y-mass/2,mass,mass)
+        c.beginPath()
+        c.arc(x, y, size/2, 0, 2*Math.PI)
+        c.fill()
+        c.closePath()
     })
-
-    // draw mouse
-    c.fillStyle = '#fff'
-    let mouse_size = 30,
-        half = mouse_size/2,
-        [x,y] = mouse
-    c.fillRect(x-half,y-half,mouse_size,mouse_size)
 })()
