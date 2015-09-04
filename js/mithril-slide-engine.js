@@ -51,10 +51,29 @@ export default () => {
         return active(index)
     })
 
+    const toggleFullscreen = () => {
+        const d = document.body,
+            isFullscreen = (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement)
+
+        if(!isFullscreen){
+            d.requestFullscreen && d.requestFullscreen()
+            d.mozRequestFullScreen && d.mozRequestFullScreen()
+            d.webkitRequestFullScreen && d.webkitRequestFullScreen()
+            d.msRequestFullscreen && d.msRequestFullscreen()
+        } else {
+            document.exitFullscreen && document.exitFullscreen()
+            document.mozCancelFullScreen && document.mozCancelFullScreen()
+            document.webkitExitFullscreen && document.webkitExitFullscreen()
+            document.msExitFullscreen && document.msExitFullscreen()
+        }
+    }
+
     const keymap = {
             37: 'LEFT',
             39: 'RIGHT',
-            224: 'CMD'
+            224: 'CMD',
+            17: 'CTRL',
+            70: 'F'
         },
         pressed = {}
 
@@ -71,6 +90,10 @@ export default () => {
                 let next = active()+1
                 if(next > slides().length - 1) next = 0
                 navigate(next)
+            } else if(pressed.CTRL && pressed.F){
+                toggleFullscreen()
+                e.preventDefault()
+                e.stopImmediatePropagation()
             }
         },
         keyup: (e) => {
