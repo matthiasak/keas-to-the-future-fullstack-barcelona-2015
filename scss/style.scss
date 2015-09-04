@@ -291,3 +291,8 @@ a {
         cursor: pointer;
     }
 }
+
+html:fullscreen,body:fullscreen,.slides:fullscreen {
+    width:100%;
+    height:100%;
+}
