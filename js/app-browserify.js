@@ -116,9 +116,7 @@ let pause1 = [
     [m('code', 'particle()'), ' -> Just a function that returns an object'],
     [m('code', 'particle()'), ' --> Simple data: ',m('code', '{accel, velocity, position}')],
     [m('code', 'particle()'), ' ---> Could easily hold other data (color?, weight?)'],
-    [m('code', 'update()'), ' -> Without accel, it\'s just changing position based on velocity (we have to code the change in velocity, too)'],
-    [m('code', 'update()'), ' --> With accel affecting velocity, and "friction" involved, we can have more realistic physics; each particle carries its own data that the engine continues to blindly ', m('code', 'update()'),'.'],
-    [m('code', 'update()'), ' ---> This particular mode of updating particles and their positions is approaching a paradigm called Verlet engines. Rename ', m('code', 'update()'), ' to ', m('code','integrate()'), ' and it will make more sense when you consult Wikipedia after this talk. :-)']
+    [m('code', 'update()'), ' ----> force → accel → velocity → position']
 ]
 
 let orderOfOps = [
@@ -155,7 +153,6 @@ function app() {
     e.insert(frame('./slides/particleLoopAccel.js'))
     e.insert(frame('./slides/apply-force.js'))
     e.insert(recap(pause1))
-    e.insert(recap(orderOfOps))
     e.insert(warning())
     e.insert(frame('./slides/vectors.js'))
     e.insert(movement())
