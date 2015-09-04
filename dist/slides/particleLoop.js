@@ -30,7 +30,7 @@ const update = (p) => {
     return { ...p, position }
 }
 
-const update_physics = () => {
+function update_physics() {
     requestAnimationFrame(update_physics)
     particles = particles.map(p => update(p))
 }

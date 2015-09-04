@@ -54,12 +54,16 @@ const particle = (
 // velocity *= 1-friction _|---> part a
 // position += velocity--------> part b
 const update = (p, time, friction) => {
-    let [[px,py], [vx,vy], [ax,ay]] = [p.position, p.velocity, p.accel]
+    let [[px,py], [vx,vy], [ax,ay]] =
+        [p.position, p.velocity, p.accel]
+
     vx = (vx+ax) * (1-friction)
     vy = (vy+ay) * (1-friction)
+
     let position = [px + vx, py + vy],
         accel = [0,0],
         velocity = [vx,vy]
+
     return { ...p, position, accel, velocity }
 }
 
@@ -108,9 +112,9 @@ const orb = (mass, [px,py]) => {
 let orbs = []
 
 // the mouse
-window.addEventListener('mousedown', ({clientX, clientY}) => {
-    orbs.push(orb(random(10,40), [clientX,clientY]))
-})
+window.addEventListener('mousedown',
+    ({clientX, clientY}) =>
+        orbs.push(orb(random(10,40), [clientX,clientY])))
 
 /**
  * PHYSICS UPDATES
@@ -118,37 +122,70 @@ window.addEventListener('mousedown', ({clientX, clientY}) => {
 
 const WORLD_FRICTION = 0.1
 looper((time) => {
-    orbs = orbs.map(p => update(p, time, WORLD_FRICTION))
+    orbs = orbs.map(p =>
+        update(p, time, WORLD_FRICTION))
+    // time as mutiplier?
+    // --> changes "px per frame"
+    // --> velocity to "px per second"
 })()
 
 looper((time) => {
-    orbs = orbs.map(p => applyForce(p, time, [0,32.174]))
+    orbs = orbs.map(p =>
+        applyForce(p, time, [0,32.174]))
+    // 32.174ft/sec^2
+    //
+    // time as mutiplier?
+    // --> changes "px per frame"
+    // --> velocity to "px per second"
 })()
 
 looper(() => {
 
     // with walls
+    //
+    // OMG THIS IS SO UGLY
     orbs = orbs.map(p => {
         if(p.position[1] + .5*p.mass >= canvas.height){
-            p = { ...p, position: [p.position[0], canvas.height - .5*p.mass], accel:[0,0], velocity: [p.velocity[0], p.velocity[1]*-.75] }
+            p = {
+                ...p,
+                position: [p.position[0], canvas.height - .5*p.mass],
+                accel:[0,0],
+                velocity: [p.velocity[0], p.velocity[1]*-.75]
+            }
         }
         if(p.position[0] - .5*p.mass <= 0){
-            p = { ...p, position: [.5*p.mass, p.position[1]], accel:[0,p.accel[1]], velocity: [p.velocity[0]*-.75, p.velocity[1]] }
+            p = {
+                ...p,
+                position: [.5*p.mass, p.position[1]],
+                accel:[0,p.accel[1]],
+                velocity: [p.velocity[0]*-.75, p.velocity[1]] }
         }
         if(p.position[0] + .5*p.mass >= canvas.width){
-            p = { ...p, position: [canvas.width - .5*p.mass, p.position[1]], accel:[0,p.accel[1]], velocity: [p.velocity[0]*-.75, p.velocity[1]] }
+            p = {
+                ...p,
+                position: [canvas.width - .5*p.mass, p.position[1]],
+                accel:[0,p.accel[1]],
+                velocity: [p.velocity[0]*-.75, p.velocity[1]] }
         }
         return p
     })
+})()
 
+looper(() => {
     // with each other
     orbs = orbs.map(p => {
         //any collisions?
         orbs.forEach(p2 => {
-            if(p2===p) return // ignore comparing to self
-            if(mag(sub(p2.position, p.position)) < (p2.mass+p.mass)/2){
+            // ignore comparing to self
+            if(p2===p) return
+
+            let distance = mag(sub(p2.position, p.position))
+
+            if(distance < (p2.mass+p.mass)/2){
+                // direction away from collision
                 let diff = normalize(sub(p.position, p2.position))
-                p.velocity = scale(diff, 1)
+                // I like to move it, move it
+                p.velocity = diff
             }
         })
 

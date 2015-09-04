@@ -115,7 +115,8 @@ let flames = []
 let mouse = [canvas.width/2,canvas.height]
 
 window.addEventListener('mousemove',
-    ({clientX, clientY}) => mouse = [clientX, clientY])
+    ({clientX, clientY}) =>
+        mouse = [clientX, clientY])
 
 /**
  * PHYSICS UPDATES
@@ -123,23 +124,29 @@ window.addEventListener('mousemove',
 
 const WORLD_FRICTION = 0.1
 looper(time => {
-    flames = flames.map(p => update(p, WORLD_FRICTION))
+    flames = flames.map(p =>
+        update(p, WORLD_FRICTION))
 })()
 
+// wind
 looper(time => {
-    flames = flames.map(p => applyForce(p, time*p.size, [random(-2,2),-1]))
+    flames = flames.map(p =>
+        applyForce(p, time*p.size, [random(-2,2),-1]))
 })()
 
+// kill if off screen or too small
 looper(time => {
     flames = flames.filter(({position, size}) =>
         (position[1] > -1*size) &&
         (size>1))
 })()
 
-setInterval(time => {
+// add a flame
+looper(time => {
     flames.push(flame())
-})
+})()
 
+// reduce size
 looper(time => {
     flames = flames.map(p => {
         let {size} = p

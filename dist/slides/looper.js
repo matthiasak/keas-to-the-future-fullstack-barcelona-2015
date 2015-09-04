@@ -32,16 +32,13 @@ const looper = fn => {
 // to this:
 // ------------------------
 
-let d = new Date,
-    _t = null
+let d = new Date
 
 looper((t) => {
     d = new Date
-    _t = t
 })()
 
 setInterval(t => {
     reset()
-    // log(t)
-    log(new Date)
+    log(d)
 })

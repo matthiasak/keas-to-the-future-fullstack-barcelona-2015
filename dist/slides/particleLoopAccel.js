@@ -62,6 +62,12 @@ looper(t => {
     particles = particles.map(p => update(p, WORLD_FRICTION))
 })()
 
+// looper(t => {
+//     particles = particles.map(p => {
+//         return {...p, accel:[1,1]}
+//     })
+// })()
+
 setInterval(t => {
     reset()
     logEm(particles)

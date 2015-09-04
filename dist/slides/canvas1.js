@@ -149,8 +149,8 @@ looper(() => {
 
 looper((t) => {
     // draw pink box
-    c.globalAlpha = .2
-    c.fillStyle = '#f449f0'
+    c.globalAlpha = .5
+    c.fillStyle = '#000'
     c.fillRect(0,0,canvas.width,canvas.height)
     c.globalAlpha = 1
 

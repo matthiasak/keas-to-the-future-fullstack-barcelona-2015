@@ -102,8 +102,10 @@ window.onresize = setSize
 // define particles
 
 const ball = (mass=50) => {
+    let rw = random(0,canvas.width),
+        rh = random(0,canvas.height)
     return {
-        ...particle([random(0,canvas.width),random(0,canvas.height)], [0,0], [0,0]),
+        ...particle([rw,rh], [0,0], [0,0]),
         mass
     }
 }
@@ -117,7 +119,9 @@ let mouse = [0,0],
 
 window.addEventListener('mousemove', ({clientX, clientY}) => {
     mouse = [clientX, clientY]
-    if(down!==false) points[down].position = mouse
+
+    if(down!==false)
+        points[down].position = mouse
 })
 
 const contains = (bounds, point) =>
@@ -131,13 +135,15 @@ window.addEventListener('mousedown', () => {
         let {position, mass} = p,
             [x,y] = position,
             r = mass/2
+
         if(contains([[x-r, y-r], [x+r, y+r]], mouse)){
             down = i
         }
     })
 })
 
-window.addEventListener('mouseup', () => down = false)
+window.addEventListener('mouseup', () =>
+    down = false)
 
 /**
  * PHYSICS UPDATES
@@ -145,8 +151,8 @@ window.addEventListener('mouseup', () => down = false)
 
 const WORLD_FRICTION = 0.1
 looper(time => {
-    balls = balls.map(p => update(p, WORLD_FRICTION))
-    points = points.map(p => update(p, WORLD_FRICTION))
+    balls = balls.map(p =>
+        update(p, WORLD_FRICTION))
 })()
 
 looper(time => {
@@ -156,7 +162,10 @@ looper(time => {
             return applyForce(
                 b,
                 time,
-                scale(normalize(sub(p.position, b.position)), mag(sub(p.position, b.position)))
+                scale(
+                    normalize(sub(p.position, b.position)),
+                    mag(sub(p.position, b.position))
+                )
             )
         })
         return p
@@ -170,7 +179,7 @@ looper(time => {
 // draw every 16ms
 looper(t => {
     c.clearRect(0,0,canvas.width,canvas.height)
-    // draw anchors
+    // draw points
     c.fillStyle = '#888'
     points.forEach(({position, mass}, i, arr) => {
         let [x,y] = position

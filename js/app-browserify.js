@@ -37,9 +37,9 @@ let home = {
             m('.hr', 'With this guy'),
             m('img', {src: './images/me.gif'}),
             m('.hr', [
-                m('a', {href:'mkeas.org'}, 'mkeas.org'),
+                m('a', {href:'http://mkeas.org/talks'}, 'mkeas.org/talks'),
                 ' • ',
-                m('a', {href:'twitter.com/matthiasak'}, '@matthiasak')
+                m('a', {href:'http://twitter.com/matthiasak'}, '@matthiasak')
             ])
         ])
     }
@@ -51,8 +51,8 @@ let warning = () => m('.warning',
     m('h2.zap', {'data-text':'An old friend - math - approaches.'}, 'An old friend - math - approaches.')
 )
 
-let recap = (bullets) => m('div',
-    m('.hr', 'Let\'s Recap'),
+let recap = (bullets, title='Let\s Recap') => m('div',
+    m('.hr', title),
     m('ul', bullets.map(bullet => m('li', bullet)))
 )
 
@@ -97,7 +97,9 @@ const links = [
     'http://www.codinglabs.net/article_world_view_projection_matrix.aspx',
     'https://www.youtube.com/watch?v=H4c8t6myAWU',
     'http://stack.gl/#learning',
-    'http://webglfundamentals.org/'
+    'http://webglfundamentals.org/',
+    'https://www.shadertoy.com/',
+    'https://www.khronos.org/files/webgl/webgl-reference-card-1_0.pdf'
 ]
 
 let refs = () => {
@@ -106,7 +108,7 @@ let refs = () => {
         m('hr'),
         m('ul',
             links.map(href => m('li', m('a', {href}, href)))
-        )
+        ),
     )
 }
 
@@ -126,13 +128,27 @@ let orderOfOps = [
     'position'
 ]
 
+const img = (url, title, style={}) =>
+    m('div',
+        title && m('.hr', title),
+        m('img', {src: url, style}))
+
 let movement = () => m('div',
     m('.hr', 'Need to move things?'),
     m('pre', `const applyForce = (mass,accel) => accel += mass*mag(accel)`))
 
+const recaps = [
+    'es6 syntax (spread `...`, destructuring/restructuring) helps us focus on data instead of modeling taxonomy',
+    'force -> accel -> velocity -> position',
+    'multiple render loops can be friendly to the browser',
+    'mapping arrays into completely new copies of arrays 60+ times a second seems to have little adverse effect on performance',
+    'you don\'t need the `time` input to a `looper` callback unless applying a force to a particle'
+]
+
 function app() {
     let e = engine()
     e.insert(home)
+    e.insert(img('http://theironyard.com/images/iron-yard-logo.svg', "Passion at the intersection of tech and education.", {width:'30%'}))
     e.insert(frame('./slides/particle.js'))
     e.insert(frame('./slides/particleLoop.js'))
     e.insert(frame('./slides/looper.js'))
@@ -153,8 +169,10 @@ function app() {
     e.insert(frame('./slides/chain.js'))
     e.insert(frame('./slides/springs.js'))
     e.insert(frame('./slides/fire.js'))
-    e.insert(frame('./slides/webgl-shift.js'))
+    // e.insert(frame('./slides/webgl-shift.js'))
+    e.insert(frame('./slides/webgl-colors.js'))
     e.insert(frame('./slides/webgl.js'))
+    e.insert(recap(recaps, 'Takeaways'))
     e.insert(refs())
 
     e.render('html')

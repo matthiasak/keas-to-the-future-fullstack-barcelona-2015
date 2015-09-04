@@ -54,12 +54,16 @@ const particle = (
 // velocity *= 1-friction _|---> part a
 // position += velocity--------> part b
 const update = (p, friction) => {
-    let [[px,py], [vx,vy], [ax,ay]] = [p.position, p.velocity, p.accel]
+    let [[px,py], [vx,vy], [ax,ay]] =
+        [p.position, p.velocity, p.accel]
+
     vx = (vx+ax) * (1-friction)
     vy = (vy+ay) * (1-friction)
+
     let position = [px + vx, py + vy],
         accel = [0,0],
         velocity = [vx,vy]
+
     return { ...p, position, accel, velocity }
 }
 
@@ -109,10 +113,14 @@ let orbs = []
 
 // the mouse
 let mouse = [0,0]
-window.addEventListener('mousemove', ({clientX, clientY}) => mouse = [clientX, clientY])
-window.addEventListener('mousedown', ({clientX, clientY}) => {
-    orbs.push(orb(random(10,40), [clientX,clientY]))
-})
+
+window.addEventListener('mousemove',
+    ({clientX, clientY}) =>
+        mouse = [clientX, clientY])
+
+window.addEventListener('mousedown',
+    ({clientX, clientY}) =>
+        orbs.push(orb(random(10,40), [clientX,clientY])))
 
 /**
  * PHYSICS UPDATES

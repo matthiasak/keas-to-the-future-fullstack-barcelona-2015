@@ -103,7 +103,7 @@ window.onresize = setSize
 let cols = ~~(canvas.width/30),
     rows = ~~(canvas.height/30)
 
-let particles = Array(cols*rows+2*cols+3).fill(true).map((v,i,arr) => {
+let particles = Array(cols*(rows+2)*(cols+2)).fill(true).map((v,i,arr) => {
     let w = canvas.width,
         h = canvas.height
     return particle(
@@ -117,16 +117,20 @@ let particles = Array(cols*rows+2*cols+3).fill(true).map((v,i,arr) => {
 
 // the mouse
 let mouse = [0,0]
-window.addEventListener('mousemove', ({clientX, clientY}) => mouse = [clientX, clientY])
+window.addEventListener('mousemove',
+    ({clientX, clientY}) =>
+        mouse = [clientX, clientY])
 
 /**
  * PHYSICS UPDATES
  */
 
-const WORLD_FRICTION = .1
-looper(() => {
-    particles = particles.map(p => update(p, WORLD_FRICTION))
-})()
+// ---> no movement, so not needed :-)
+// const WORLD_FRICTION = .1
+// looper(() => {
+//     particles = particles.map(p =>
+//         update(p, WORLD_FRICTION))
+// })()
 
 /**
  * DRAW UPDATES
@@ -134,7 +138,7 @@ looper(() => {
 
 // draw every 16ms
 looper((t) => {
-    // draw black box
+    // draw background
     c.fillStyle = '#000'
     c.fillRect(0,0,canvas.width,canvas.height)
 
@@ -148,7 +152,12 @@ looper((t) => {
         let [x,y] = position,
             diff = sub(mouse, position),
             n = scale(normalize(diff), 20),
-            lineWidth = Math.min(Math.max(~~(canvas.width / mag(diff)), 1), 100)
+            lineWidth = Math.min(
+                Math.max(
+                    ~~(canvas.width / mag(diff)),
+                    1
+                ),
+            100)
 
         c.lineWidth = lineWidth
         c.moveTo(x,y)
@@ -156,11 +165,4 @@ looper((t) => {
         c.stroke()
         c.closePath()
     })
-
-    // draw mouse
-    c.fillStyle = '#000'
-    let mouse_size = 100,
-        half = mouse_size/2,
-        [x,y] = mouse
-    c.fillRect(x-half,y-half,mouse_size,mouse_size)
 })()

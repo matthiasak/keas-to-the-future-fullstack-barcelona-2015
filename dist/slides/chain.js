@@ -121,16 +121,17 @@ const link = (size=2, [px,py]) => {
     }
 }
 
-let links = Array(1)
+let chains = Array(2)
     .fill(true)
     .map(_ =>
-        link(8, [canvas.width/2, 0]))
+        link(8, [random(), 0]))
 
 // the mouse
 //
 let mouse = [0,0]
 window.addEventListener('mousemove',
-    ({clientX, clientY}) => mouse = [clientX, clientY])
+    ({clientX, clientY}) =>
+        mouse = [clientX, clientY])
 
 /**
  * PHYSICS UPDATES
@@ -138,7 +139,7 @@ window.addEventListener('mousemove',
 
 const WORLD_FRICTION = 0.01
 looper(time => {
-    links = links.map(l => {
+    chains = chains.map(l => {
         let {links} = l
         links = links.map((l,i) => {
             if(i == 0) return l
@@ -149,8 +150,20 @@ looper(time => {
 })()
 
 looper(time => {
+    // gravity
+    chains = chains.map(l => {
+        let {links} = l
+        links = links.map((l,i,arr) => {
+            if(i === 0) return l
+            return applyForce(l, time, [0,32.174])
+        })
+        return {...l, links}
+    })
+})()
+
+looper(time => {
     // run away from the mouse
-    links = links.map(l => {
+    chains = chains.map(l => {
         let {links} = l
         links = links.map((l,i) => {
             if(i === 0) return l
@@ -162,9 +175,11 @@ looper(time => {
         })
         return {...l, links}
     })
+})()
 
+looper(time => {
     // pull back to parent links
-    links = links.map(l => {
+    chains = chains.map(l => {
         let {links} = l
         links = links.map((l,i,arr) => {
             if(i === 0) return l
@@ -173,19 +188,11 @@ looper(time => {
         })
         return {...l, links}
     })
+})()
 
-    // gravity
-    links = links.map(l => {
-        let {links} = l
-        links = links.map((l,i,arr) => {
-            if(i === 0) return l
-            return applyForce(l, time, [0,32.174])
-        })
-        return {...l, links}
-    })
-
+looper(time => {
     // max spring length
-    links = links.map(l => {
+    chains = chains.map(l => {
         let {links} = l
         links = links.map((l,i,arr) => {
             if(i === 0) return l
@@ -213,7 +220,7 @@ looper(t => {
     c.clearRect(0,0,canvas.width,canvas.height)
 
     //draw links
-    links.forEach(l => {
+    chains.forEach(l => {
         let {links} = l
         links.forEach((l,i,arr) => {
             let {position} = l,

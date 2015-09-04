@@ -57,7 +57,8 @@ const update = (p, friction) => {
 const WORLD_FRICTION = .95
 
 looper(t => {
-    particles = particles.map(p => update(p, WORLD_FRICTION))
+    particles = particles.map(p =>
+        update(p, WORLD_FRICTION))
 })()
 
 setInterval(t => {
@@ -76,10 +77,11 @@ const add = (...vx) =>
         [a[0] + v[0], a[1] + v[1]],
         [0,0])
 
-const applyForce = (v, m, a) => {
-    let {accel} = v
-    accel = scale(add(accel,a), m)
-    return { ...v, accel }
+// force = m*a
+const applyForce = (p, m, a) => {
+    let {accel} = p
+    accel = add(scale(a,m), accel)
+    return { ...p, accel }
 }
 
 setInterval(() => {

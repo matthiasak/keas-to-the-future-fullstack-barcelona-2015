@@ -54,9 +54,12 @@ const particle = (
 // velocity *= 1-friction _|---> part a
 // position += velocity--------> part b
 const update = (p, friction) => {
-    let [[px,py], [vx,vy], [ax,ay]] = [p.position, p.velocity, p.accel]
+    let [[px,py], [vx,vy], [ax,ay]] =
+        [p.position, p.velocity, p.accel]
+
     vx = (vx+ax) * (1-friction)
     vy = (vy+ay) * (1-friction)
+
     let position = [px + vx, py + vy],
         accel = [0,0],
         velocity = [vx,vy]
@@ -122,7 +125,9 @@ looper(() => {
 
 // the mouse
 let mouse = [0,0]
-window.addEventListener('mousemove', ({clientX, clientY}) => mouse = [clientX, clientY])
+window.addEventListener('mousemove',
+    ({clientX, clientY}) =>
+        mouse = [clientX, clientY])
 
 // chase the mouse by continually applying/adjusting force to each particle
 looper(() => {
@@ -142,8 +147,8 @@ looper(() => {
 
 looper((t) => {
     // draw pink box
-    c.globalAlpha = .2
-    c.fillStyle = '#f449f0'
+    c.globalAlpha = .5
+    c.fillStyle = '#000'
     c.fillRect(0,0,canvas.width,canvas.height)
     c.globalAlpha = 1
 
