@@ -146,7 +146,7 @@ const recaps = [
 function app() {
     let e = engine()
     e.insert(home)
-    e.insert(img('./dist/images/iron-yard-logo.svg', "Passion at the intersection of tech and education.", {width:'50%'}))
+    e.insert(img('./images/iron-yard-logo.svg', "Passion at the intersection of tech and education.", {width:'50%'}))
     e.insert(frame('./slides/particle.js'))
     e.insert(frame('./slides/particleLoop.js'))
     e.insert(frame('./slides/looper.js'))

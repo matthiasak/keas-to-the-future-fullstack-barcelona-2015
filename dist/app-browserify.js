@@ -92,7 +92,7 @@ var recaps = ['es6 syntax (spread `...`, destructuring/restructuring) helps us f
 function app() {
     var e = (0, _mithrilSlideEngine2['default'])();
     e.insert(home);
-    e.insert(img('./dist/images/iron-yard-logo.svg', "Passion at the intersection of tech and education.", { width: '50%' }));
+    e.insert(img('./images/iron-yard-logo.svg', "Passion at the intersection of tech and education.", { width: '50%' }));
     e.insert(frame('./slides/particle.js'));
     e.insert(frame('./slides/particleLoop.js'));
     e.insert(frame('./slides/looper.js'));
