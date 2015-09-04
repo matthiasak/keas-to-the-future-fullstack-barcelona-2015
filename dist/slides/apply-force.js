@@ -65,7 +65,7 @@ setInterval(t => {
     reset()
     log(new Date)
     log(logEm(particles))
-})
+}, 0)
 
 // applying a force to each particle
 

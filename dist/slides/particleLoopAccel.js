@@ -71,4 +71,4 @@ looper(t => {
 setInterval(t => {
     reset()
     logEm(particles)
-})
+},0)

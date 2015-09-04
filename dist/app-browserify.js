@@ -182,40 +182,68 @@ exports['default'] = function () {
         return slides([].concat(_toConsumableArray(first), _toConsumableArray(second)));
     });
 
-    var navigate = function navigate(index) {
+    var navigate = computable(function (index) {
         window.location.hash = '#' + index;
         prev(active());
+        if (index >= slides().length) {
+            window.location.hash = '#0';
+            return;
+        }
+        if (index < 0) {
+            window.location.hash = '#' + (slides().length - 1);
+            return;
+        }
         return active(index);
-    };
+    });
 
-    var LEFT = 37,
-        RIGHT = 39;
+    var keymap = {
+        37: 'LEFT',
+        39: 'RIGHT',
+        224: 'CMD'
+    },
+        pressed = {};
 
     var events = {
-        onkeyup: function onkeyup(e) {
+        onkeydown: function onkeydown(e) {
             var keyCode = e.keyCode;
 
-            if (LEFT === keyCode) {
+            pressed[keymap[keyCode]] = true;
+
+            if (pressed.LEFT) {
                 var next = active() - 1;
                 if (next < 0) next = slides().length - 1;
                 navigate(next);
-            } else if (RIGHT === keyCode) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            } else if (pressed.RIGHT) {
                 var next = active() + 1;
                 if (next > slides().length - 1) next = 0;
                 navigate(next);
+                e.preventDefault();
+                e.stopImmediatePropagation();
             }
+        },
+        onkeyup: function onkeyup(e) {
+            var keyCode = e.keyCode;
+
+            pressed[keymap[keyCode]] = false;
         }
     };
 
     var config = function config(element, init, vdom) {
         if (active() === prev()) return;
+        if (!init) {
+            Object.keys(events).forEach(function (e) {
+                return window.addEventListener(e, events[e]);
+            });
+        }
     };
 
     var hashChanger = function hashChanger() {
         return window.addEventListener('hashchange', function () {
             var hash = window.location.hash;
             var slide = parseInt(hash.slice(1));
-            if (slide !== NaN) {
+            if (slide !== NaN && slide !== active()) {
                 navigate(slide);
             }
         });
@@ -225,6 +253,14 @@ exports['default'] = function () {
         return a();
     };
 
+    var arrows = function arrows() {
+        return [(0, _mithrilResolver.m)('.arrow.left', { onclick: function onclick() {
+                return navigate(active() - 1);
+            } }), (0, _mithrilResolver.m)('.arrow.right', { onclick: function onclick() {
+                return navigate(active() + 1);
+            } })];
+    };
+
     var view = function view(ctrl) {
         var a = active(),
             s = slides(),
@@ -232,8 +268,7 @@ exports['default'] = function () {
 
         var _slide = (0, _mithrilResolver.m)('div', { key: a, className: sel }, s[a]);
 
-        return (0, _mithrilResolver.m)('html', { config: config }, [(0, _mithrilResolver.m)('head', [(0, _mithrilResolver.m)('title', 'something'), (0, _mithrilResolver.m)('meta', { name: 'viewport', content: "width=device-width, initial-scale=1.0" }), (0, _mithrilResolver.m)('link', { href: './style.css', type: 'text/css', rel: 'stylesheet' })]), (0, _mithrilResolver.m)('body', events, [(0, _mithrilResolver.m)('.slides', _slide) //_slides.map(valueOf))
-        ])]);
+        return (0, _mithrilResolver.m)('html', { config: config }, [(0, _mithrilResolver.m)('head', [(0, _mithrilResolver.m)('title', 'slide: ' + active()), (0, _mithrilResolver.m)('meta', { name: 'viewport', content: "width=device-width, initial-scale=1.0" }), (0, _mithrilResolver.m)('link', { href: './style.css', type: 'text/css', rel: 'stylesheet' })]), (0, _mithrilResolver.m)('body', [(0, _mithrilResolver.m)('.slides', _slide), arrows()])]);
     };
 
     var render = function render() {

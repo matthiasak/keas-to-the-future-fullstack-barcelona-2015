@@ -40,4 +40,4 @@ setInterval(t => {
     reset()
     logEm(particles)
     log(t)
-})
+},0)

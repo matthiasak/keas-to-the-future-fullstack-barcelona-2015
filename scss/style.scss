@@ -270,3 +270,24 @@ a {
 }
 
 
+.arrow {
+    position: fixed;
+    top: 50%;
+    background: black;
+    color: white;
+    display: inline-block;
+    padding: .4rem;
+    transform: translateY(-50%);
+    z-index: 1;
+    &.left {
+        left: 0;
+        &:before{content: '↤';}
+    }
+    &.right {
+        right: 0;
+        &:before{content: '↦';}
+    }
+    &:hover {
+        cursor: pointer;
+    }
+}

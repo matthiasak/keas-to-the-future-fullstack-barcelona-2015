@@ -37,44 +37,74 @@ export default () => {
         return slides([...first, ...second])
     })
 
-    const navigate = index => {
+    const navigate = computable(index => {
         window.location.hash = `#${index}`
         prev(active())
+        if(index >= slides().length) {
+            window.location.hash = `#0`
+            return
+        }
+        if(index < 0) {
+            window.location.hash = `#${slides().length-1}`
+            return
+        }
         return active(index)
-    }
+    })
 
-    const LEFT = 37,
-        RIGHT = 39
+    const keymap = {
+            37: 'LEFT',
+            39: 'RIGHT',
+            224: 'CMD'
+        },
+        pressed = {}
 
     const events = {
-        onkeyup: (e) => {
+        onkeydown: (e) => {
             let {keyCode} = e
+            pressed[keymap[keyCode]] = true
 
-            if(LEFT === keyCode) {
+            if(pressed.LEFT) {
                 let next = active()-1
                 if(next < 0) next = slides().length - 1
                 navigate(next)
-            } else if(RIGHT === keyCode) {
+                e.preventDefault()
+                e.stopImmediatePropagation()
+            } else if(pressed.RIGHT) {
                 let next = active()+1
                 if(next > slides().length - 1) next = 0
                 navigate(next)
+                e.preventDefault()
+                e.stopImmediatePropagation()
             }
+        },
+        onkeyup: (e) => {
+            let {keyCode} = e
+            pressed[keymap[keyCode]] = false
         }
     }
 
     const config = function(element, init, vdom) {
         if(active() === prev()) return
+        if(!init){
+            Object.keys(events).forEach(e =>
+                window.addEventListener(e, events[e]))
+        }
     }
 
     const hashChanger = () => window.addEventListener('hashchange', () => {
         const hash = window.location.hash
         let slide = parseInt(hash.slice(1))
-        if(slide !== NaN){
+        if(slide !== NaN && slide !== active()){
             navigate(slide)
         }
     })
 
     const valueOf = (a) => a()
+
+    const arrows = () => [
+        m('.arrow.left', {onclick: () => navigate(active()-1)}),
+        m('.arrow.right', {onclick: () => navigate(active()+1)})
+    ]
 
     const view = (ctrl) => {
         let a = active(),
@@ -87,12 +117,13 @@ export default () => {
 
         return m('html', {config}, [
             m('head', [
-                m('title', 'something'),
+                m('title', `slide: ${active()}`),
                 m('meta', {name:'viewport', content:"width=device-width, initial-scale=1.0"}),
                 m('link', {href: './style.css', type:'text/css', rel:'stylesheet'})
             ]),
-            m('body', events, [
-                m('.slides', _slide)//_slides.map(valueOf))
+            m('body', [
+                m('.slides', _slide),
+                arrows()
             ])
         ])
     }

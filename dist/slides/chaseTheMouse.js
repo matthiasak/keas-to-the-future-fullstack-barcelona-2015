@@ -150,4 +150,4 @@ setInterval((t) => {
     log({mouse})
     log('-----------')
     log(new Date)
-})
+},0)

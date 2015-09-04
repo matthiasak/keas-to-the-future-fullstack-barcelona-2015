@@ -27,7 +27,7 @@ const looper = fn => {
 //     reset()
 //     logEm(particles)
 //     log(t)
-// })
+// },0)
 //
 // to this:
 // ------------------------
@@ -41,4 +41,4 @@ looper((t) => {
 setInterval(t => {
     reset()
     log(d)
-})
+},0)
