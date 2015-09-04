@@ -204,7 +204,7 @@ exports['default'] = function () {
         pressed = {};
 
     var events = {
-        onkeydown: function onkeydown(e) {
+        keydown: function keydown(e) {
             var keyCode = e.keyCode;
 
             pressed[keymap[keyCode]] = true;
@@ -213,30 +213,28 @@ exports['default'] = function () {
                 var next = active() - 1;
                 if (next < 0) next = slides().length - 1;
                 navigate(next);
-                e.preventDefault();
-                e.stopImmediatePropagation();
             } else if (pressed.RIGHT) {
                 var next = active() + 1;
                 if (next > slides().length - 1) next = 0;
                 navigate(next);
-                e.preventDefault();
-                e.stopImmediatePropagation();
             }
         },
-        onkeyup: function onkeyup(e) {
+        keyup: function keyup(e) {
             var keyCode = e.keyCode;
 
             pressed[keymap[keyCode]] = false;
         }
     };
 
+    var initEvents = function initEvents() {
+        Object.keys(events).forEach(function (e) {
+            return window.addEventListener(e, events[e]);
+        });
+        hashChanger();
+    };
+
     var config = function config(element, init, vdom) {
         if (active() === prev()) return;
-        if (!init) {
-            Object.keys(events).forEach(function (e) {
-                return window.addEventListener(e, events[e]);
-            });
-        }
     };
 
     var hashChanger = function hashChanger() {
@@ -272,7 +270,7 @@ exports['default'] = function () {
     };
 
     var render = function render() {
-        return (hashChanger(), _mithrilResolver.m.mount(qs.apply(undefined, arguments), { view: view }));
+        return (initEvents(), _mithrilResolver.m.mount(qs.apply(undefined, arguments), { view: view }));
     };
 
     return { slides: slides, insert: insert, remove: remove, navigate: navigate, render: render };

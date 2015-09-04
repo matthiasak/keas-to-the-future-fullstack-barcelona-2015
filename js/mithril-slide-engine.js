@@ -59,7 +59,7 @@ export default () => {
         pressed = {}
 
     const events = {
-        onkeydown: (e) => {
+        keydown: (e) => {
             let {keyCode} = e
             pressed[keymap[keyCode]] = true
 
@@ -67,37 +67,36 @@ export default () => {
                 let next = active()-1
                 if(next < 0) next = slides().length - 1
                 navigate(next)
-                e.preventDefault()
-                e.stopImmediatePropagation()
             } else if(pressed.RIGHT) {
                 let next = active()+1
                 if(next > slides().length - 1) next = 0
                 navigate(next)
-                e.preventDefault()
-                e.stopImmediatePropagation()
             }
         },
-        onkeyup: (e) => {
+        keyup: (e) => {
             let {keyCode} = e
             pressed[keymap[keyCode]] = false
         }
     }
 
-    const config = function(element, init, vdom) {
-        if(active() === prev()) return
-        if(!init){
-            Object.keys(events).forEach(e =>
+    const initEvents = () => {
+        Object.keys(events).forEach(e =>
                 window.addEventListener(e, events[e]))
-        }
+        hashChanger()
     }
 
-    const hashChanger = () => window.addEventListener('hashchange', () => {
-        const hash = window.location.hash
-        let slide = parseInt(hash.slice(1))
-        if(slide !== NaN && slide !== active()){
-            navigate(slide)
-        }
-    })
+    const config = function(element, init, vdom) {
+        if(active() === prev()) return
+    }
+
+    const hashChanger = () =>
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash
+            let slide = parseInt(hash.slice(1))
+            if(slide !== NaN && slide !== active()){
+                navigate(slide)
+            }
+        })
 
     const valueOf = (a) => a()
 
@@ -128,7 +127,7 @@ export default () => {
         ])
     }
 
-    const render = (..._) => (hashChanger(), m.mount(qs(..._), {view}))
+    const render = (..._) => (initEvents(), m.mount(qs(..._), {view}))
 
     return { slides, insert, remove, navigate, render }
 }

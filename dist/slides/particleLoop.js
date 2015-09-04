@@ -39,5 +39,5 @@ update_physics()
 setInterval(t => {
     reset()
     logEm(particles)
-    log(t)
+    log(new Date)
 },0)
