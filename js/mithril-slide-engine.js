@@ -18,17 +18,12 @@ export default () => {
         active = m.prop(parseHash()),
         prev = m.prop()
 
-    const insert = computable((val, index) => {
-        if(val instanceof Function) val = {view: val}
-        if(!val.controller) val.controller = () => {}
-
-        if(typeof index === 'undefined')
-            index = slides().length
-
-        const i = slides(),
-            [first, third] = [i.slice(0,index), i.slice(index+1)]
-
-        return slides([...first, val, ...third])
+    const insert = computable((..._slides) => {
+        return slides(_slides.map(val => {
+            if(val instanceof Function) val = {view: val}
+            if(!val.controller) val.controller = () => {}
+            return val
+        }))
     })
 
     const remove = computable(index => {

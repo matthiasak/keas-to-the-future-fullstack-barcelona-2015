@@ -129,6 +129,14 @@ window.addEventListener('mousemove',
     ({clientX, clientY}) =>
         mouse = [clientX, clientY])
 
+// click and go boom!
+window.addEventListener('mousedown',
+    ({clientX, clientY}) => {
+        particles = particles.map(p => {
+            return applyForce(p, p.mass, vector(random(-1,1), random(-1,1)))
+        })
+    })
+
 // chase the mouse by continually applying/adjusting force to each particle
 looper(() => {
     particles = particles.map(p => {

@@ -145,32 +145,34 @@ const recaps = [
 
 function app() {
     let e = engine()
-    e.insert(home)
-    e.insert(img('./images/iron-yard-logo.svg', "Passion at the intersection of tech and education.", {width:'50%'}))
-    e.insert(frame('./slides/particle.js'))
-    e.insert(frame('./slides/particleLoop.js'))
-    e.insert(frame('./slides/looper.js'))
-    e.insert(frame('./slides/particleLoopAccel.js'))
-    e.insert(frame('./slides/apply-force.js'))
-    e.insert(recap(pause1))
-    e.insert(warning())
-    e.insert(frame('./slides/vectors.js'))
-    e.insert(movement())
-    e.insert(frame('./slides/chaseTheMouse.js'))
-    e.insert(frame('./slides/canvas1.js'))
-    e.insert(frame('./slides/canvas-mouse.js'))
-    e.insert(frame('./slides/canvas-pointers.js'))
-    e.insert(frame('./slides/canvas-gravity.js'))
-    e.insert(frame('./slides/relate-to-time.js'))
-    e.insert(frame('./slides/planes.js'))
-    e.insert(frame('./slides/chain.js'))
-    e.insert(frame('./slides/springs.js'))
-    e.insert(frame('./slides/fire.js'))
-    // e.insert(frame('./slides/webgl-shift.js'))
-    e.insert(frame('./slides/webgl-colors.js'))
-    e.insert(frame('./slides/webgl.js'))
-    e.insert(recap(recaps, 'Takeaways'))
-    e.insert(refs())
+    e.insert(
+        home,
+        img('./images/iron-yard-logo.svg', "Passion at the intersection of tech and education.", {width:'50%'}),
+        frame('./slides/particle.js'),
+        frame('./slides/particleLoop.js'),
+        frame('./slides/looper.js'),
+        frame('./slides/particleLoopAccel.js'),
+        frame('./slides/apply-force.js'),
+        recap(pause1),
+        warning(),
+        frame('./slides/vectors.js'),
+        movement(),
+        frame('./slides/chaseTheMouse.js'),
+        frame('./slides/canvas1.js'),
+        frame('./slides/canvas-mouse.js'),
+        frame('./slides/canvas-pointers.js'),
+        frame('./slides/canvas-gravity.js'),
+        frame('./slides/relate-to-time.js'),
+        frame('./slides/planes.js'),
+        frame('./slides/chain.js'),
+        frame('./slides/springs.js'),
+        frame('./slides/fire.js'),
+        // frame('./slides/webgl-shift.js'),
+        frame('./slides/webgl-colors.js'),
+        frame('./slides/webgl.js'),
+        recap(recaps, 'Takeaways'),
+        refs()
+    )
 
     e.render('html')
 }
